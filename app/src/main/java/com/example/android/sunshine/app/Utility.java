@@ -17,14 +17,44 @@ package com.example.android.sunshine.app;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.text.format.Time;
+
+import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Utility {
+    /**
+     * Check whether the device is connected to the internet or not
+     *
+     * @param context The context you wish to check from
+     * @return true if the device is connected, false otherwise
+     */
+    public static boolean isNetworkAvailable(Context context) {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    @SuppressWarnings("ResourceType")
+    public static @SunshineSyncAdapter.LocationStatus int getLocationStatus(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getInt(context.getString(R.string.pref_location_status_key), SunshineSyncAdapter.LOCATION_STATUS_UNKNOWN);
+    }
+
+    public static void resetLocationStatus(Context context){
+        SharedPreferences.Editor spe = PreferenceManager.getDefaultSharedPreferences(context).edit();
+        spe.putInt(context.getString(R.string.pref_location_status_key),
+                                            SunshineSyncAdapter.LOCATION_STATUS_INVALID_LOCATION);
+        spe.apply();    // Do in background thread
+    }
+
     public static String getPreferredLocation(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getString(context.getString(R.string.pref_location_key),
@@ -85,10 +115,10 @@ public class Utility {
         if (julianDay == currentJulianDay) {
             String today = context.getString(R.string.today);
             int formatId = R.string.format_full_friendly_date;
-            return String.format(context.getString(
+            return context.getString(
                     formatId,
                     today,
-                    getFormattedMonthDay(context, dateInMillis)));
+                    getFormattedMonthDay(context, dateInMillis));
         } else if ( julianDay < currentJulianDay + 7 ) {
             // If the input date is less than a week in the future, just return the day name.
             return getDayName(context, dateInMillis);

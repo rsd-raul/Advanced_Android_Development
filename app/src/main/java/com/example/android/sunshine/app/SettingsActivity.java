@@ -24,6 +24,7 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import com.example.android.sunshine.app.data.WeatherContract;
 import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
@@ -92,18 +93,32 @@ public class SettingsActivity extends PreferenceActivity
             // the preference's 'entries' list (since they have separate labels/values).
             ListPreference listPreference = (ListPreference) preference;
             int prefIndex = listPreference.findIndexOfValue(stringValue);
-            if (prefIndex >= 0) {
+            if (prefIndex >= 0)
                 preference.setSummary(listPreference.getEntries()[prefIndex]);
+        } else if (key.equals(getString(R.string.pref_location_key))) {
+            @SunshineSyncAdapter.LocationStatus int status = Utility.getLocationStatus(this);
+            switch (status){
+                case SunshineSyncAdapter.LOCATION_STATUS_OK:
+                    preference.setSummary(stringValue);
+                    break;
+                case SunshineSyncAdapter.LOCATION_STATUS_UNKNOWN:
+                    preference.setSummary(getString(R.string.pref_location_unknown_description, value));
+                    break;
+                case SunshineSyncAdapter.LOCATION_STATUS_INVALID_LOCATION:
+                    preference.setSummary(getString(R.string.pref_location_error_description, value));
+                    break;
+                default:
+                    preference.setSummary(stringValue);
             }
-        } else {
+        } else
             // For other preferences, set the summary to the value's simple string representation.
             preference.setSummary(stringValue);
-        }
     }
 
     // This gets called before the preference is changed
     @Override
     public boolean onPreferenceChange(Preference preference, Object value) {
+        Log.e("AAAA", "onPreferenceChange: AAAAAAAAAAAAA");
         setPreferenceSummary(preference, value);
         return true;
     }
@@ -113,6 +128,7 @@ public class SettingsActivity extends PreferenceActivity
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if ( key.equals(getString(R.string.pref_location_key)) ) {
+            Utility.resetLocationStatus(this);
             SunshineSyncAdapter.syncImmediately(this);
         } else if ( key.equals(getString(R.string.pref_units_key)) ) {
             // units have changed. update lists of weather entries accordingly
