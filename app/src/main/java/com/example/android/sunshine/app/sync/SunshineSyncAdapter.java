@@ -130,14 +130,24 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             urlConnection.connect();
 
             // Read the input stream into a String
-            InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
+            InputStream inputStream;
+            try {
+                inputStream = urlConnection.getInputStream();
+            }catch (IOException e) {
+                inputStream = urlConnection.getErrorStream();
+            }
+
             if (inputStream == null) {
-                // Nothing to do.
+                Log.e(LOG_TAG, "Error ");
+                // If the code didn't successfully get the weather data, there's no point in attempting
+                // to parse it.
+                setLocationStatus(getContext(), LOCATION_STATUS_SERVER_DOWN);
                 return;
             }
+
             reader = new BufferedReader(new InputStreamReader(inputStream));
 
+            StringBuffer buffer = new StringBuffer();
             String line;
             while ((line = reader.readLine()) != null) {
                 // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
