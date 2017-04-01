@@ -16,18 +16,25 @@
 package com.example.android.sunshine.app;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
-
+import android.widget.Toast;
 import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
+//import com.example.android.sunshine.app.gcm.RegistrationIntentService;
+//import com.google.android.gms.common.ConnectionResult;
+//import com.google.android.gms.common.GoogleApiAvailability;
 
 public class MainActivity extends ActionBarActivity implements ForecastFragment.Callback {
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
+    private final static int PLAY_SERV_RESOLUTION_REQUEST = 9000;
+    public static final String SENT_TOKEN_SERVER = "sentTokenToServer";
 
     private boolean mTwoPane;
     private String mLocation;
@@ -61,6 +68,34 @@ public class MainActivity extends ActionBarActivity implements ForecastFragment.
         forecastFragment.setUseTodayLayout(!mTwoPane);
 
         SunshineSyncAdapter.initializeSyncAdapter(this);
+
+        if (checkPlayServices()) {
+//            SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+//            boolean sentToken = sharedPrefs.getBoolean(SENT_TOKEN_SERVER, false);
+//            if(!sentToken)
+//                startService(new Intent(this, RegistrationIntentService.class));
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            sharedPreferences.edit().putBoolean(MainActivity.SENT_TOKEN_SERVER, true).apply();
+        } else
+            // This is where we could either prompt a user that they should install
+            // the latest version of Google Play Services, or add an error snackbar
+            // that some features won't be available.
+            Toast.makeText(this, "Install the latest version of Google Play Services" + "\n" +
+                            "or some features won't be available", Toast.LENGTH_SHORT).show();
+    }
+
+    private boolean checkPlayServices() {
+//        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+//        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
+//
+//        if (resultCode == ConnectionResult.SUCCESS)
+//            return true;
+//
+//        if (!apiAvailability.isUserResolvableError(resultCode))
+//            finish();
+//
+//        apiAvailability.getErrorDialog(this, resultCode, PLAY_SERV_RESOLUTION_REQUEST).show();
+        return true;
     }
 
     @Override
